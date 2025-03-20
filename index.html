@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Cosmic Climbers: Space Exploration Game</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #0f0f29;
+      color: white;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      background-image: linear-gradient(to bottom, #0f0f29, #1a1a40, #0f0f29);
+    }
+
+    h1 {
+      color: #9fe3ff;
+      margin-bottom: 5px;
+      text-shadow: 0 0 10px #4fc3ff;
+    }
+
+    h3 {
+      color: #ff9fd7;
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      background-color: rgba(16, 16, 50, 0.7);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 0 30px rgba(79, 195, 255, 0.3);
+      max-width: 900px;
+      width: 100%;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 10px;
+    }
+
+    .player-info {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 15px;
+    }
+
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 8px 15px;
+      border-radius: 30px;
+    }
+
+    .player-marker {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+    }
+
+    .player-active {
+      box-shadow: 0 0 10px white;
+    }
+
+    #game-board {
+      display: grid;
+      grid-template-columns: repeat(10, 1fr);
+      grid-template-rows: repeat(10, 1fr);
+      gap: 2px;
+      width: 100%;
+      max-width: 600px;
+      aspect-ratio: 1;
+      background-color: rgba(20, 20, 60, 0.8);
+      border-radius: 10px;
+      padding: 10px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    }
+
+    .cell {
+      position: relative;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: bold;
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(30, 30, 80, 0.6);
+      box-shadow: inset 0 0 5px rgba(79, 195, 255, 0.2);
+      overflow: hidden;
+    }
+
+    .cell-special {
+      box-shadow: inset 0 0 10px rgba(255, 159, 215, 0.6);
+    }
+
+    .cell-number {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .wormhole-start {
+      background-color: rgba(0, 150, 50, 0.3);
+    }
+
+    .wormhole-end {
+      background-color: rgba(0, 150, 50, 0.3);
+    }
+
+    .asteroid-start {
+      background-color: rgba(150, 0, 0, 0.3);
+    }
+
+    .asteroid-end {
+      background-color: rgba(150, 0, 0, 0.3);
+    }
+
+    .player-token {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 5px white;
+      z-index: 10;
+    }
+
+    .dice {
+      width: 60px;
+      height: 60px;
+      background-color: white;
+      color: #0f0f29;
+      font-size: 24px;
+      font-weight: bold;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+      transition: transform 0.1s, box-shadow 0.3s;
+    }
+
+    .dice:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+    }
+
+    .dice:active {
+      transform: scale(0.95);
+    }
+
+    .message-box {
+      min-height: 50px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 10px 15px;
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    button {
+      background-color: #4fc3ff;
+      color: #0f0f29;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.1s, background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #9fe3ff;
+      transform: scale(1.05);
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+
+    button:disabled {
+      background-color: #4a5c6a;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .roll-animation {
+      animation: roll 0.5s linear;
+    }
+
+    @keyframes roll {
+      0% { transform: rotate(0deg); }
+      25% { transform: rotate(90deg); }
+      50% { transform: rotate(180deg); }
+      75% { transform: rotate(270deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .pop-animation {
+      animation: pop 0.5s ease;
+    }
+
+    @keyframes pop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    .move-animation {
+      transition: all 0.3s ease;
+    }
+
+    .game-icon {
+      font-size: 16px;
+    }
+
+    .rules {
+      margin-top: 20px;
+      padding: 15px 20px;
+      background-color: rgba(16, 16, 50, 0.7);
+      border-radius: 10px;
+      max-width: 600px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .rules h4 {
+      color: #ff9fd7;
+      margin-top: 0;
+    }
+
+    .rules ul {
+      padding-left: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cosmic Climbers</h1>
+  <h3>A Space Exploration Adventure</h3>
+  
+  <div class="game-container">
+    <div class="player-info" id="player-info">
+      <!-- Player info will be populated here -->
+    </div>
+    
+    <div class="message-box" id="message-box">
+      Welcome to Cosmic Climbers! Roll the dice to begin your space adventure.
+    </div>
+    
+    <div class="controls">
+      <div class="dice" id="dice" onclick="rollDice()">
+        <div id="dice-value">🎲</div>
+      </div>
+      <button id="roll-button" onclick="rollDice()">Roll Dice</button>
+      <button id="reset-button" onclick="resetGame()">New Game</button>
+    </div>
+    
+    <div id="game-board">
+      <!-- The board will be populated here -->
+    </div>
+  </div>
+  
+  <div class="rules">
+    <h4>How to Play:</h4>
+    <ul>
+      <li><strong>Objective:</strong> Be the first to reach the final cell (100) - the Galactic Core!</li>
+      <li><strong>Turns:</strong> Roll the dice and move your spacecraft the corresponding number of spaces.</li>
+      <li><strong>Wormholes (Green):</strong> Land on a wormhole to take a shortcut ahead!</li>
+      <li><strong>Asteroid Fields (Red):</strong> Land on an asteroid field to get pulled back!</li>
+      <li><strong>Exact Landing:</strong> You must roll the exact number to land on cell 100. If you roll higher, you'll bounce back!</li>
+      <li><strong>Victory:</strong> The first player to reach the Galactic Core wins!</li>
+    </ul>
+  </div>
+
+  <script>
+    // Game constants
+    const BOARD_SIZE = 100;
+    const TOTAL_PLAYERS = 4;
+    const PLAYER_COLORS = ["#ff5252", "#4fc3ff", "#ffeb3b", "#4caf50"];
+    const PLAYER_NAMES = ["Red Squadron", "Blue Squadron", "Gold Squadron", "Green Squadron"];
+    const WORMHOLES = { 4: 14, 9: 31, 17: 26, 21: 42, 28: 84, 51: 67, 54: 75, 62: 95, 64: 83, 72: 91 };
+    const ASTEROIDS = { 99: 41, 89: 53, 76: 58, 66: 47, 59: 37, 49: 13, 39: 5, 33: 6, 27: 11, 19: 8 };
+    
+    // Game state
+    let currentPlayer = 0;
+    let players = [];
+    let gameOver = false;
+    let isRolling = false;
+    
+    // Initialize the game
+    function initGame() {
+      // Create players
+      for (let i = 0; i < TOTAL_PLAYERS; i++) {
+        players.push({
+          id: i,
+          position: 0,
+          color: PLAYER_COLORS[i],
+          name: PLAYER_NAMES[i]
+        });
+      }
+      
+      createBoard();
+      updatePlayerInfo();
+      updatePlayerTokens();
+    }
+    
+    // Create the game board
+    function createBoard() {
+      const board = document.getElementById('game-board');
+      board.innerHTML = '';
+      
+      // Create cells in snake-like pattern
+      for (let row = 9; row >= 0; row--) {
+        for (let col = 0; col < 10; col++) {
+          // Alternating row direction for snake-like pattern
+          let actualCol = row % 2 === 0 ? col : 9 - col;
+          let cellNumber = (row * 10) + actualCol + 1;
+          
+          const cell = document.createElement('div');
+          cell.className = 'cell';
+          cell.id = `cell-${cellNumber}`;
+          
+          // Add cell number
+          const numberSpan = document.createElement('span');
+          numberSpan.className = 'cell-number';
+          numberSpan.textContent = cellNumber;
+          cell.appendChild(numberSpan);
+          
+          // Special cells styling and icons
+          if (cellNumber === 100) {
+            cell.innerHTML += '<span class="game-icon">⭐</span>';
+            cell.style.backgroundColor = 'rgba(255, 215, 0, 0.4)';
+            cell.classList.add('cell-special');
+          } else if (WORMHOLES[cellNumber]) {
+            cell.innerHTML += '<span class="game-icon">↗️</span>';
+            cell.classList.add('wormhole-start', 'cell-special');
+          } else if (ASTEROIDS[cellNumber]) {
+            cell.innerHTML += '<span class="game-icon">↘️</span>';
+            cell.classList.add('asteroid-start', 'cell-special');
+          } else if (Object.values(WORMHOLES).includes(cellNumber)) {
+            cell.classList.add('wormhole-end', 'cell-special');
+          } else if (Object.values(ASTEROIDS).includes(cellNumber)) {
+            cell.classList.add('asteroid-end', 'cell-special');
+          }
+          
+          board.appendChild(cell);
+        }
+      }
+    }
+    
+    // Update player information display
+    function updatePlayerInfo() {
+      const playerInfo = document.getElementById('player-info');
+      playerInfo.innerHTML = '';
+      
+      players.forEach((player, index) => {
+        const playerElement = document.createElement('div');
+        playerElement.className = `player ${currentPlayer === index ? 'player-active' : ''}`;
+        
+        const marker = document.createElement('div');
+        marker.className = 'player-marker';
+        marker.style.backgroundColor = player.color;
+        
+        const name = document.createElement('span');
+        name.textContent = `${player.name}: ${player.position}`;
+        
+        playerElement.appendChild(marker);
+        playerElement.appendChild(name);
+        playerInfo.appendChild(playerElement);
+      });
+    }
+    
+    // Update player tokens on the board
+    function updatePlayerTokens() {
+      // Clear all tokens
+      const existingTokens = document.querySelectorAll('.player-token');
+      existingTokens.forEach(token => token.remove());
+      
+      // Add tokens for each player's position
+      players.forEach((player, index) => {
+        if (player.position > 0) {
+          const cell = document.getElementById(`cell-${player.position}`);
+          if (cell) {
+            const token = document.createElement('div');
+            token.className = 'player-token move-animation';
+            token.id = `token-${index}`;
+            token.style.backgroundColor = player.color;
+            
+            // Position tokens so they don't overlap
+            const offset = 5 * index;
+            token.style.top = `${50 + offset}%`;
+            token.style.left = `${50 + offset}%`;
+            token.style.transform = 'translate(-50%, -50%)';
+            
+            cell.appendChild(token);
+          }
+        }
+      });
+    }
+    
+    // Roll the dice and move the player
+    function rollDice() {
+      if (isRolling || gameOver) return;
+      
+      isRolling = true;
+      const diceElement = document.getElementById('dice');
+      const diceValueElement = document.getElementById('dice-value');
+      const player = players[currentPlayer];
+      
+      // Disable roll button
+      document.getElementById('roll-button').disabled = true;
+      
+      // Animate dice rolling
+      diceElement.classList.add('roll-animation');
+      let rollInterval = setInterval(() => {
+        diceValueElement.textContent = Math.floor(Math.random() * 6) + 1;
+      }, 50);
+      
+      // Stop rolling after a delay
+      setTimeout(() => {
+        clearInterval(rollInterval);
+        diceElement.classList.remove('roll-animation');
+        
+        // Get final dice value
+        const diceValue = Math.floor(Math.random() * 6) + 1;
+        diceValueElement.textContent = diceValue;
+        diceElement.classList.add('pop-animation');
+        
+        // Move the player
+        setTimeout(() => {
+          movePlayer(player, diceValue);
+          diceElement.classList.remove('pop-animation');
+          document.getElementById('roll-button').disabled = false;
+          isRolling = false;
+        }, 500);
+      }, 800);
+    }
+    
+    // Move the player on the board
+    function movePlayer(player, steps) {
+      const messageBox = document.getElementById('message-box');
+      let newPosition = player.position + steps;
+      let message = `${player.name} rolled a ${steps}.`;
+      
+      // Check for winning condition (exact landing on 100)
+      if (newPosition > BOARD_SIZE) {
+        newPosition = BOARD_SIZE - (newPosition - BOARD_SIZE);
+        message += ` Bounce back to ${newPosition}!`;
+      } else if (newPosition === BOARD_SIZE) {
+        // Winner!
+        player.position = newPosition;
+        updatePlayerInfo();
+        updatePlayerTokens();
+        messageBox.textContent = `🎉 ${player.name} wins the game by reaching the Galactic Core! 🎉`;
+        gameOver = true;
+        return;
+      }
+      
+      // Move player to new position
+      player.position = newPosition;
+      updatePlayerInfo();
+      updatePlayerTokens();
+      
+      // Check for wormholes and asteroids after a delay
+      setTimeout(() => {
+        // Check if landed on a wormhole
+        if (WORMHOLES[newPosition]) {
+          const wormholeEnd = WORMHOLES[newPosition];
+          message += ` Found a wormhole! Zoom ahead to ${wormholeEnd}!`;
+          player.position = wormholeEnd;
+        }
+        // Check if landed on an asteroid field
+        else if (ASTEROIDS[newPosition]) {
+          const asteroidEnd = ASTEROIDS[newPosition];
+          message += ` Hit an asteroid field! Pulled back to ${asteroidEnd}!`;
+          player.position = asteroidEnd;
+        }
+        
+        messageBox.textContent = message;
+        updatePlayerInfo();
+        updatePlayerTokens();
+        
+        // Move to next player
+        currentPlayer = (currentPlayer + 1) % TOTAL_PLAYERS;
+        updatePlayerInfo();
+      }, 500);
+    }
+    
+    // Reset the game
+    function resetGame() {
+      players = [];
+      currentPlayer = 0;
+      gameOver = false;
+      
+      document.getElementById('message-box').textContent = 'New game started! Roll the dice to begin your space adventure.';
+      document.getElementById('dice-value').textContent = '🎲';
+      document.getElementById('roll-button').disabled = false;
+      
+      initGame();
+    }
+    
+    // Initialize the game when the page loads
+    window.onload = initGame;
+  </script>
+</body>
+</html>
