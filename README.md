@@ -3,7 +3,7 @@
 Cosmic Climbers is an exciting board game-style space adventure where players navigate through wormholes and asteroid fields to reach the Galactic Core!  
 
 ## 🔗 Live Demo  
-Check out the game: [Cosmic Climbers](https://yourcosmicclimbers.com)  
+Check out the game: [Cosmic Climbers](https://cosmicracer-sl.vercel.app)  
 
 <img width="1710" alt="Screenshot 2025-03-21 at 2 04 29 AM" src="https://github.com/user-attachments/assets/95069c71-df46-4c68-b9f8-e626c3d4600c" />
 
